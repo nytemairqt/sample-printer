@@ -13,6 +13,34 @@ def random_flip(audio):
 		audio = np.flip(audio, 1)
 	return audio
 
+def randomize_lpf_pre(lpf_pre):
+	# Randomizes the pre-fx lowpass filter (6db/oct)
+	lpf_pre.cutoff_frequency_hz = random.uniform(50.0, 20000.0)
+
+def randomize_lpf_post(lpf_post):
+	# Randomizes the post-fx lowpass filter (6db/oct)
+	lpf_post.cutoff_frequency_hz = random.uniform(3000.0, 20000.0)
+
+def randomize_pitchshift(pitchshift):
+	# Randomizes the pitch in semitones, can be used in a Pedalboard object
+	pitchshift.semitones = random.uniform(-12.0, 12.0)
+
+def randomize_chorus(chorus):
+	# Randomizes all relevant Chorus parameters
+	chorus.rate_hz = random.uniform(0.0, 100.0)
+	chorus.depth = random.uniform(0.0, 1.0)
+	chorus.centre_delay_ms = random.uniform(1.0, 15.0)
+	chorus.feedback = random.uniform(0.0, 0.9)
+	chorus.mix = random.uniform(0.0, 1.0)
+
+def randomize_distortion(distortion):
+	# Randomizes all relevant Distortion parameters
+	distortion.drive_db = random.uniform(0.0, 40.0)
+
+def randomize_bitcrush(bitcrush):
+	# Randomizes all relevant Bitcrush parameters
+	bitcrush.bit_depth = random.uniform(1.0, 16.0)
+
 def randomize_supermassive(supermassive):
 	# Randomizes all relevant SuperMassive parameters
 	modes =  ['Gemini', 'Hydra', 'Centaurus', 'Sagittarius', 'Great Annihilator', 'Andromeda', 'Lyra', 'Capricorn', 'Triangulum', 'Large Magellanic Cloud', 'Cirrus Major', 'Cirrus Minor', 'Cassiopeia', 'Orion']
