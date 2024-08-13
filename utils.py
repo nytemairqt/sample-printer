@@ -14,12 +14,16 @@ def random_flip(audio):
 	return audio
 
 def randomize_lpf_pre(lpf_pre):
-	# Randomizes the pre-fx lowpass filter (6db/oct)
-	lpf_pre.cutoff_frequency_hz = random.uniform(50.0, 20000.0)
+	# Randomizes the pre-fx lowpass filter (static LFOtool filter)
+	lpf_pre.vol = 0.0
+	lpf_pre.f_cutoff = random.uniform(21.0, 14700.0)
+	lpf_pre.f_on_off = 'FILT ON'
 
 def randomize_lpf_post(lpf_post):
-	# Randomizes the post-fx lowpass filter (6db/oct)
-	lpf_post.cutoff_frequency_hz = random.uniform(3000.0, 20000.0)
+	# Randomizes the pre-fx lowpass filter (static LFOtool filter)
+	lpf_post.vol = 0.0
+	lpf_post.f_cutoff = random.uniform(21.0, 14700.0)
+	lpf_post.f_on_off = 'FILT ON'
 
 def randomize_pitchshift(pitchshift):
 	# Randomizes the pitch in semitones, can be used in a Pedalboard object

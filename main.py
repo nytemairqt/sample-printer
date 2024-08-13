@@ -1,4 +1,4 @@
-from pedalboard import Pedalboard, Chorus, Reverb, Distortion, PitchShift, Delay, Bitcrush, Limiter, LowpassFilter, load_plugin
+from pedalboard import Pedalboard, Chorus, Reverb, Distortion, PitchShift, Delay, Bitcrush, Limiter, LowpassFilter, load_plugin, time_stretch
 from pedalboard.io import AudioFile
 import soundfile as sf
 import numpy as np
@@ -9,14 +9,10 @@ from utils import *
 
 # https://github.com/spotify/pedalboard
 
-# use LIBROSA
-# 	it has pitch-shifting, timestretch and a bunch of sound-decomposition & resynthesis tools
-# 	pre and post stretch, pre and post shift
-# 	pre and post eq, filter, saturation
-# pitch shifting & timestretch
-# eq, compression, saturation, filter stereo-wideners
-# driver (NI), gullfoss (maybe), lfotool (maybe), declick (output clicks only)
-# supermassive
+# to add:
+# random sampling (trim to a multiple of analyzed samplerate)
+# need filters, stereo widener
+# gullfoss (maybe), lfotool (maybe), declick (output clicks only)
 # amps/cabs?
 
 print('Loading plugins...')
@@ -27,13 +23,16 @@ driver = load_plugin(r'C:\Program Files\Common Files\VST3\Driver.vst3')
 supermassive = load_plugin(r'C:\Program Files\Common Files\VST3\ValhallaSupermassive.vst3')
 amp_roots = load_plugin(r'C:\Program Files\Common Files\VST3\Amped - Roots.vst3')
 
+# Filters
+
+lpf_pre = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
+lpf_post = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
+
 # Pedalboard FX
 pitchshift = PitchShift()
 chorus = Chorus()
 distortion = Distortion()
 bitcrush = Bitcrush()
-lpf_pre = LowpassFilter()
-lpf_post = LowpassFilter()
 
 # Setup Limiter (to avoid RIP ears)
 limiter = Limiter()
@@ -45,18 +44,21 @@ if __name__ == "__main__":
 	ONLY_REVERB = False
 
 	# Main Loop
-	# This will be randomized to select a section of a field recording or a sample
-	audio, samplerate = sf.read('gtr.wav')
-
-	# Pad to make room for long reverb tails
-	audio = np.pad(audio, ((0, samplerate*10), (0, 0)))
-
-	# Main Loop
 	for i in tqdm(range(20)):
-		# Apply Librosa processing
+
+		# Need to refresh audio each increment to avoid stacking time-stretches
+		audio, samplerate = sf.read('gtr.wav')
+		audio = np.float32(audio) # Needs to be 32-bit for time-stretching
+
+		# Pad to make room for long reverb tails
+		audio = np.pad(audio, ((0, samplerate*10), (0, 0)))
 
 		# Random Flip (Pre)
 		audio = random_flip(audio)
+
+		# Time Stretch
+		if roll():
+			audio = time_stretch(input_audio=audio, samplerate=samplerate, stretch_factor=random.uniform(0.1, 2.0))		
 
 		# Pedalboard
 		proc = Pedalboard([])
