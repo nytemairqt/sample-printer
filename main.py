@@ -1,3 +1,4 @@
+import os
 from pedalboard import Pedalboard, Chorus, Reverb, Distortion, PitchShift, Delay, Bitcrush, Limiter, LowpassFilter, load_plugin, time_stretch
 from pedalboard.io import AudioFile
 import soundfile as sf
@@ -6,14 +7,15 @@ from tqdm import tqdm
 import random
 
 from utils import *
+from hyperparameters import *
 
 # https://github.com/spotify/pedalboard
 
 # to add:
 # random sampling (trim to a multiple of analyzed samplerate)
-# need filters, stereo widener
-# gullfoss (maybe), lfotool (maybe), declick (output clicks only)
-# amps/cabs?
+# need hpf, stereo widener
+# lfotool w/ movement, declick (output clicks only)
+# x50iii w/ cab (stereo active)
 
 print('Loading plugins...')
 
@@ -38,6 +40,10 @@ bitcrush = Bitcrush()
 limiter = Limiter()
 limiter.threshold_db = -12.0
 
+INPUT = 'input/'
+OUTPUT = 'output/'
+input_audio = []
+
 if __name__ == "__main__":
 
 	# Hyperparameters
@@ -46,77 +52,86 @@ if __name__ == "__main__":
 	# Main Loop
 	for i in tqdm(range(20)):
 
+		for root, dirs, files in os.walk(INPUT):
+			for name in files:
+				input_audio.append(f'{INPUT}{name}')
+
+		seed = int(random.randint(0, len(input_audio)-1))
+
 		# Need to refresh audio each increment to avoid stacking time-stretches
-		audio, samplerate = sf.read('gtr.wav')
+		audio, samplerate = sf.read(input_audio[seed])
 		audio = np.float32(audio) # Needs to be 32-bit for time-stretching
 
 		# Pad to make room for long reverb tails
 		audio = np.pad(audio, ((0, samplerate*10), (0, 0)))
 
 		# Random Flip (Pre)
-		audio = random_flip(audio)
+		if USING_RANDOM_FLIP_PRE:
+			audio = random_flip(audio)
 
 		# Time Stretch
-		if roll():
+		if roll() and USING_TIME_STRETCH:
 			audio = time_stretch(input_audio=audio, samplerate=samplerate, stretch_factor=random.uniform(0.1, 2.0))		
 
 		# Pedalboard
 		proc = Pedalboard([])
 
 		# Pitch Shift
-		if roll():
+		if roll() and USING_PITCH_SHIFT:
 			randomize_pitchshift(pitchshift)
 			proc.append(pitchshift)
 
 		# LPF (Pre)
-		if roll():
+		if roll() and USING_LPF_PRE:
 			randomize_lpf_pre(lpf_pre)
 			proc.append(lpf_pre)
 
 		# OTT
-		if roll():
+		if roll() and USING_OTT:
 			proc.append(OTT)
 
 		# Distortion
-		if roll():
+		if roll() and USING_DISTORTION:
 			randomize_distortion(distortion)
 			proc.append(distortion)
 
 		# Driver
-		if roll():
+		if roll() and USING_DRIVER:
 			randomize_driver(driver)
 			proc.append(driver)
 
 		# Bitcrush
-		if roll():
+		if roll() and USING_BITCRUSH:
 			randomize_bitcrush(bitcrush)
 			proc.append(bitcrush)
 
 		# LPF (Post)
-		if roll():
+		if roll() and USING_LPF_POST:
 			randomize_lpf_post(lpf_post)
 			proc.append(lpf_post)
 
 		# Chorus
-		if roll():
+		if roll() and USING_CHORUS:
 			randomize_chorus(chorus)
 			proc.append(chorus)
 
 		# Supermassive
-		if roll():
+		if roll() and USING_SUPERMASSIVE:
 			randomize_supermassive(supermassive)
 			if ONLY_REVERB:
 				supermassive.mix = 100.0
 			proc.append(supermassive)
 
 		# Limiter
-		proc.append(limiter)
+		if USING_LIMITER:
+			proc.append(limiter)
 
 		# Apply Pedalboard
 		processed = proc(audio, samplerate)
 
-		# Random Flip (Pre)
-		processed = random_flip(processed)
+		# Random Flip (Post)
+		if USING_RANDOM_FLIP_POST:
+			processed = random_flip(processed)
 
 		# Write Audio Out
-		sf.write(f'output/output{i}.wav', processed, samplerate)
+		sf.write(f'{OUTPUT}output{i}.wav', processed, samplerate)
