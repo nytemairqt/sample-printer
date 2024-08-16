@@ -62,8 +62,18 @@ if __name__ == "__main__":
 		audio, samplerate = sf.read(input_audio[seed])
 		audio = np.float32(audio) # Needs to be 32-bit for time-stretching
 
+		# Trim Audio To Desired Length
+		# [n_samples, channels]
+		trim_length = samplerate * 5
+
+		if USING_DYNAMIC_TRIM and audio.shape[0] > trim_length:
+			print(f'Trimming audio to {trim_length} samples.')
+			trim_start = random.randint(0, audio.shape[0] - trim_length)
+			audio = audio[trim_start:trim_start+trim_length]
+
 		# Pad to make room for long reverb tails
-		audio = np.pad(audio, ((0, samplerate*10), (0, 0)))
+		if USING_PAD_AUDIO:
+			audio = np.pad(audio, ((0, samplerate*10), (0, 0)))
 
 		# Random Flip (Pre)
 		if USING_RANDOM_FLIP_PRE:
