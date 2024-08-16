@@ -12,7 +12,6 @@ from hyperparameters import *
 # https://github.com/spotify/pedalboard
 
 # to add:
-# random sampling (trim to a multiple of analyzed samplerate)
 # need hpf, stereo widener
 # lfotool w/ movement, declick (output clicks only)
 # x50iii w/ cab (stereo active)
@@ -50,7 +49,7 @@ if __name__ == "__main__":
 	ONLY_REVERB = False
 
 	# Main Loop
-	for i in tqdm(range(20)):
+	for i in tqdm(range(NUM_GENERATIONS)):
 
 		for root, dirs, files in os.walk(INPUT):
 			for name in files:
