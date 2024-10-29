@@ -5,6 +5,7 @@ import soundfile as sf
 import numpy as np
 from tqdm import tqdm 
 import random
+import glob
 
 from utils import *
 from hyperparameters import *
@@ -15,46 +16,27 @@ chorus = Chorus()
 distortion = Distortion()
 bitcrush = Bitcrush()
 
-# Plugins
-
-print(f'Loading Plugins...')
-OTT = load_plugin(r'C:\Program Files\Common Files\VST3\OTT.vst3')
-driver = load_plugin(r'C:\Program Files\Common Files\VST3\Driver.vst3')
-supermassive = load_plugin(r'C:\Program Files\Common Files\VST3\ValhallaSupermassive.vst3')
-
-fuse_compressor = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Fuse Compressor.vst3')
-hybrid_filter = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Hybrid Filter.vst3')
-rift = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Rift.vst3')
-rift_feedback_lite = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Rift Feedback Lite.vst3')
-ripple_phaser = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Ripple Phaser.vst3')
-flex_chorus = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Flex Chorus.vst3')
-cluster_delay = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Cluster Delay.vst3')
-swarm_reverb = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Swarm Reverb.vst3')
-
-lpf_pre = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
-lpf_post = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
-
-# Setup Limiter (to avoid RIP ears)
-limiter = Limiter()
-limiter.threshold_db = -12.0
-
-INPUT = 'input/segments/'
+INPUT = 'input/'
 OUTPUT = 'output/'
 input_audio = []
 
 if __name__ == "__main__":	
 
+	# Load Plugins
+	OTT, driver, supermassive, fuse_compressor, hybrid_filter, rift, rift_feedback_lite, ripple_phaser, flex_chorus, cluster_delay, swarm_reverb, lpf_pre, lpf_post = load_plugins()
+	
 	# Main Loop
-	print('Loading Audio files into pool...')
-	for i in tqdm(range(NUM_GENERATIONS)):
-		for root, dirs, files in os.walk(INPUT):
-			for name in files:
-				input_audio.append(f'{INPUT}{name}')
 
+	print('Loading Audio files into pool...')
+	input_audio = glob.glob(os.path.join(INPUT, '**', '*.wav'), recursive=True)
+
+	for i in tqdm(range(NUM_GENERATIONS)):		
 		layers = []
 		for j in range(NUM_MAX_LAYERS):
 			seed = int(random.randint(0, len(input_audio)-1))
 			# Need to refresh audio each increment to avoid stacking time-stretches
+			if j == 0:
+				print(f'Using file: {input_audio[seed]}')
 			data, samplerate = sf.read(input_audio[seed])
 			data = np.float32(data) # Must be float 32			
 			layers.append((data, detect_transient(data[:, 0])))
@@ -175,6 +157,8 @@ if __name__ == "__main__":
 
 		# Limiter
 		if USING_LIMITER:
+			limiter = Limiter()
+			limiter.threshold_db = -12.0
 			proc.append(limiter)
 
 		# Shuffle & Apply Pedalboard FX
@@ -189,4 +173,3 @@ if __name__ == "__main__":
 
 		# Write Audio Out
 		sf.write(f'{OUTPUT}output{i}.wav', processed, samplerate)
-		

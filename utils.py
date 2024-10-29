@@ -3,6 +3,25 @@ import numpy as np
 from scipy.signal import find_peaks
 import soundfile as sf
 from hyperparameters import * 
+from pedalboard import load_plugin
+
+def load_plugins():
+	print(f'Loading Plugins...')
+	OTT = load_plugin(r'C:\Program Files\Common Files\VST3\OTT.vst3')
+	driver = load_plugin(r'C:\Program Files\Common Files\VST3\Driver.vst3')
+	supermassive = load_plugin(r'C:\Program Files\Common Files\VST3\ValhallaSupermassive.vst3')
+	fuse_compressor = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Fuse Compressor.vst3')
+	hybrid_filter = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Hybrid Filter.vst3')
+	rift = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Rift.vst3')
+	rift_feedback_lite = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Rift Feedback Lite.vst3')
+	ripple_phaser = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Ripple Phaser.vst3')
+	flex_chorus = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Flex Chorus.vst3')
+	cluster_delay = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Cluster Delay.vst3')
+	swarm_reverb = load_plugin(r'C:\Program Files\Common Files\VST3\Minimal Audio\Swarm Reverb.vst3')
+	lpf_pre = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
+	lpf_post = load_plugin(r'C:\Program Files\Common Files\VST3\LFOTool.vst3')
+
+	return OTT, driver, supermassive, fuse_compressor, hybrid_filter, rift, rift_feedback_lite, ripple_phaser, flex_chorus, cluster_delay, swarm_reverb, lpf_pre, lpf_post
 
 def detect_transient(audio, threshold=0.1):
 	# Calculate the envelope by taking the absolute of the signal
