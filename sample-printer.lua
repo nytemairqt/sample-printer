@@ -22,12 +22,17 @@ function GetAllFiles(folder)
   return files
 end
 
+function roll()
+  return math.random() < 0.5
+end
+
 -- Main function
 function Main()
   -- Hyperparameters
   local sourceFolder = "C:/Users/nytem/Desktop/taiko"
   local outputFolder = "C:/Users/nytem/Desktop/taiko/output"    
   local NUM_GENERATIONS = 3
+  local SWAP_STEREO = true 
   local FADE_IN = 0 -- in seconds 
   local FADE_OUT = 0
   local MAX_PITCH_SHIFT = -24
@@ -42,6 +47,8 @@ function Main()
     reaper.ShowMessageBox("Unable to load audio files.", "Error", 0)
     return 
   end 
+
+  
   
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
@@ -72,6 +79,12 @@ function Main()
         local new_len = math.random() * 3 + 1
         if new_len > item_len then new_len = item_len end
         local start_pos = math.random() * (item_len - new_len)
+
+        -- Swap L&R channels 
+        reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", 100.0)
+        if SWAP_STEREO and roll() then
+          reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", -100)
+        end
         
         -- Trim item
         reaper.SetMediaItemInfo_Value(item, "D_POSITION", start_pos)
