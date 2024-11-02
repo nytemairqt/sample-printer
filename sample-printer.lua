@@ -27,7 +27,7 @@ function Main()
   -- Hyperparameters
   local sourceFolder = "C:/Users/nytem/Desktop/taiko"
   local outputFolder = "C:/Users/nytem/Desktop/taiko/output"    
-  local NUM_GENERATIONS = 20
+  local NUM_GENERATIONS = 3
   local FADE_IN = 0 -- in seconds 
   local FADE_OUT = 0
   local MAX_PITCH_SHIFT = -24
