@@ -60,7 +60,8 @@ function Main()
   local SWAP_STEREO = true
   local REVERSE = true
   local RANDOM_TRIM = true
-  local PAD_REVERB = true 
+  local PAD_RIGHT = true 
+  local PAD_AMOUNT = 8
   local FADE_IN = 0 -- in seconds 
   local FADE_OUT = 1
   local MAX_PITCH_SHIFT = -24
@@ -126,8 +127,8 @@ function Main()
           reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
         end      
 
-        if PAD_REVERB then 
-          length = pad(length, 8)  
+        if PAD_RIGHT then 
+          length = pad(length, PAD_AMOUNT)  
           reaper.GetSet_LoopTimeRange(true, false, start, length, false)
         end
 
