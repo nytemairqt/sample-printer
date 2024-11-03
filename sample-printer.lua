@@ -1,3 +1,8 @@
+-- lol
+function print(text)
+  reaper.ShowConsoleMsg(text)
+end
+
 -- Recursive file crawl
 function GetAllFiles(folder)
   local files = {}
@@ -26,17 +31,34 @@ function roll()
   return math.random() < 0.5
 end
 
+function trim(start, length)
+  local scalar = .4
+  local new_start = start + (length * (math.random() * scalar))
+  local new_length = (start + length) - (length * (math.random() * scalar))
+  return new_start, new_length
+end
+
+function cleanup(track)
+  while reaper.GetTrackNumMediaItems(track) > 0 do
+    local item = reaper.GetTrackMediaItem(track, 0)
+    if item then
+      reaper.DeleteTrackMediaItem(track, item)
+    end
+  end
+end
+
 -- Main function
 function Main()
   -- Hyperparameters
   local sourceFolder = "C:/Users/nytem/Desktop/taiko"
-  local outputFolder = "C:/Users/nytem/Desktop/taiko/output"    
-  local NUM_GENERATIONS = 3
-  local SWAP_STEREO = true 
-  local REVERSE = true 
+  local outputFolder = "C:/Users/nytem/Desktop/output"    
+  local NUM_GENERATIONS = 1
+  local SWAP_STEREO = false 
+  local REVERSE = false
+  local RANDOM_TRIM = true
   local FADE_IN = 0 -- in seconds 
   local FADE_OUT = 0
-  local MAX_PITCH_SHIFT = -24
+  local MAX_PITCH_SHIFT = 0
 
   -- Get Files & Create Output Dir
   local files = GetAllFiles(sourceFolder)
@@ -73,19 +95,14 @@ function Main()
     if item then
       local take = reaper.GetActiveTake(item)
       if take then
-        -- Get item properties
-        local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-        
-        -- Create random section (between 1 and 4 seconds)
-        local new_len = math.random() * 3 + 1
-        if new_len > item_len then new_len = item_len end
-        local start_pos = math.random() * (item_len - new_len)
+        local start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+        local length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
 
         -- Swap L&R channels 
-        reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", 100.0)
+        reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", 1)
         if SWAP_STEREO and roll() then
           reaper.ShowConsoleMsg("\nSwapping L&R channels.")
-          reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", -100)
+          reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", -1)
         end
 
         -- Reverse Buffer
@@ -93,25 +110,18 @@ function Main()
           reaper.ShowConsoleMsg("\nReversing audio buffer.")
           reaper.Main_OnCommand(41051, 0) -- toggle take reverse
         end
-        
-        -- Trim item
-        reaper.SetMediaItemInfo_Value(item, "D_POSITION", start_pos)
-        reaper.SetMediaItemInfo_Value(item, "D_LENGTH", new_len)
-        
+
         -- Apply Pitch Shift
         local pitch_shift = math.random() * MAX_PITCH_SHIFT
         reaper.SetMediaItemTakeInfo_Value(take, "D_PITCH", pitch_shift)
-        
-        -- Select item timerange for render
-        local item_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-        local item_length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-        local item_end = item_pos + item_length
 
-        reaper.ShowConsoleMsg("\nAudio Start: " ..item_pos)
-        reaper.ShowConsoleMsg("\nAudio End: " ..item_end)
-        -- add hyperparameter for reverb tail padding 
-        -- item_length += TAIL_PAD
-        reaper.GetSet_LoopTimeRange(true, false, item_pos, item_pos + item_length, false)
+        -- Trim Item
+        reaper.GetSet_LoopTimeRange(true, false, start, start + length, false)
+        if RANDOM_TRIM then 
+          start_offset, end_offset = trim(start, length)
+          reaper.GetSet_LoopTimeRange(true, false, start_offset, end_offset, false)
+          reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
+        end        
         
         -- Generate output filename        
         local output_dir = string.format("%s/", outputFolder)
@@ -140,11 +150,11 @@ function Main()
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
         reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
-        -- Clean up
-        reaper.DeleteTrackMediaItem(track, item)
+        -- Clean Up
+        cleanup(track)
       end
     end
-    
+
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
   end
