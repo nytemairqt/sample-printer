@@ -38,6 +38,10 @@ function trim(start, length)
   return new_start, new_length
 end
 
+function pad(length, pad_amount)
+  return length + pad_amount
+end
+
 function cleanup(track)
   while reaper.GetTrackNumMediaItems(track) > 0 do
     local item = reaper.GetTrackMediaItem(track, 0)
@@ -52,13 +56,14 @@ function Main()
   -- Hyperparameters
   local sourceFolder = "C:/Users/nytem/Desktop/taiko"
   local outputFolder = "C:/Users/nytem/Desktop/output"    
-  local NUM_GENERATIONS = 1
-  local SWAP_STEREO = false 
-  local REVERSE = false
+  local NUM_GENERATIONS = 15
+  local SWAP_STEREO = true
+  local REVERSE = true
   local RANDOM_TRIM = true
+  local PAD_REVERB = true 
   local FADE_IN = 0 -- in seconds 
-  local FADE_OUT = 0
-  local MAX_PITCH_SHIFT = 0
+  local FADE_OUT = 1
+  local MAX_PITCH_SHIFT = -24
 
   -- Get Files & Create Output Dir
   local files = GetAllFiles(sourceFolder)
@@ -71,8 +76,6 @@ function Main()
     return 
   end 
 
-  
-  
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
     local seed = math.random(1, #files)
@@ -118,11 +121,16 @@ function Main()
         -- Trim Item
         reaper.GetSet_LoopTimeRange(true, false, start, start + length, false)
         if RANDOM_TRIM then 
-          start_offset, end_offset = trim(start, length)
-          reaper.GetSet_LoopTimeRange(true, false, start_offset, end_offset, false)
+          start, length = trim(start, length)
+          reaper.GetSet_LoopTimeRange(true, false, start, length, false)
           reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
-        end        
-        
+        end      
+
+        if PAD_REVERB then 
+          length = pad(length, 8)  
+          reaper.GetSet_LoopTimeRange(true, false, start, length, false)
+        end
+
         -- Generate output filename        
         local output_dir = string.format("%s/", outputFolder)
         local output_file = string.format("processed_%s.wav", i)
