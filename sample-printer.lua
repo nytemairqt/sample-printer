@@ -33,6 +33,7 @@ function Main()
   local outputFolder = "C:/Users/nytem/Desktop/taiko/output"    
   local NUM_GENERATIONS = 3
   local SWAP_STEREO = true 
+  local REVERSE = true 
   local FADE_IN = 0 -- in seconds 
   local FADE_OUT = 0
   local MAX_PITCH_SHIFT = -24
@@ -83,7 +84,14 @@ function Main()
         -- Swap L&R channels 
         reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", 100.0)
         if SWAP_STEREO and roll() then
+          reaper.ShowConsoleMsg("\nSwapping L&R channels.")
           reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", -100)
+        end
+
+        -- Reverse Buffer
+        if REVERSE and roll() then
+          reaper.ShowConsoleMsg("\nReversing audio buffer.")
+          reaper.Main_OnCommand(41051, 0) -- toggle take reverse
         end
         
         -- Trim item
