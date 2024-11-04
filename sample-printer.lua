@@ -54,9 +54,9 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local sourceFolder = "C:/Users/nytem/Desktop/taiko"
-  local outputFolder = "C:/Users/nytem/Desktop/output"    
-  local NUM_GENERATIONS = 15
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output"    
+  local NUM_GENERATIONS = 500
   local SWAP_STEREO = true
   local REVERSE = true
   local RANDOM_TRIM = true
@@ -67,9 +67,9 @@ function Main()
   local MAX_PITCH_SHIFT = -24
 
   -- Get Files & Create Output Dir
-  local files = GetAllFiles(sourceFolder)
-  if not reaper.file_exists(outputFolder) then
-    reaper.RecursiveCreateDirectory(outputFolder, 0)
+  local files = GetAllFiles(INPUT_FOLDER)
+  if not reaper.file_exists(OUTPUT_FOLDER) then
+    reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
   reaper.ShowConsoleMsg("\nFound: " ..#files .. " files")
   if not files then 
@@ -133,7 +133,7 @@ function Main()
         end
 
         -- Generate output filename        
-        local output_dir = string.format("%s/", outputFolder)
+        local output_dir = string.format("%s/", OUTPUT_FOLDER)
         local output_file = string.format("processed_%s.wav", i)
 
         reaper.ShowConsoleMsg("\nOutput Path: " ..output_dir)
