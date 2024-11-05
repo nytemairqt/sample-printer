@@ -55,7 +55,7 @@ end
 function Main()
   -- Hyperparameters
   local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output"    
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/tails"    
   local NUM_GENERATIONS = 500
   local SWAP_STEREO = true
   local REVERSE = true
@@ -63,7 +63,7 @@ function Main()
   local PAD_RIGHT = true 
   local PAD_AMOUNT = 8
   local FADE_IN = 0 -- in seconds 
-  local FADE_OUT = 1
+  local FADE_OUT = 0.3
   local MAX_PITCH_SHIFT = -24
 
   -- Get Files & Create Output Dir
