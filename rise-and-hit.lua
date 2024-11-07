@@ -40,15 +40,33 @@ function cleanup(track)
   end
 end
 
+function find_end()
+    local last_position = 0
+    local num_items = reaper.CountMediaItems(0)
+
+    for i = 0, num_items - 1 do
+        local item = reaper.GetMediaItem(0, i)
+        local item_end = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+        
+        -- Update last_position if the current item end is further
+        if item_end > last_position then
+            last_position = item_end
+        end
+    end
+
+  return last_position
+end
+
 -- Main function
 function Main()
   -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/input"
   local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/05-generated"    
+
   local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/01-heads"
   local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/02-kicks"
   local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/output/03-bodies"
   local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/04-tails"
+
   local NUM_GENERATIONS = 1
   local PAD_RIGHT = true 
   local PAD_AMOUNT = 1
@@ -63,21 +81,16 @@ function Main()
       return
   end
 
-  local head_track = reaper.GetTrack(0, 1) -- kick track
-  local kick_track = reaper.GetTrack(0, 2) 
-  local body_track = reaper.GetTrack(0, 3) 
-  local tail_track = reaper.GetTrack(0, 4) 
+  local head_track = reaper.GetTrack(0, 2) -- kick track
+  local kick_track = reaper.GetTrack(0, 3) 
+  local kick_octave_track = reaper.GetTrack(0, 4)
+  local body_track = reaper.GetTrack(0, 5) 
+  local tail_track = reaper.GetTrack(0, 6) 
 
   -- Get Files & Create Output Dir
-  --local files = GetAllFiles(INPUT_FOLDER)
   if not reaper.file_exists(OUTPUT_FOLDER) then
     reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
-  --reaper.ShowConsoleMsg("\nFound: " ..#files .. " files")
-  --if not files then 
-    --reaper.ShowMessageBox("Unable to load audio files.", "Error", 0)
-    --return 
-  --end 
 
   local head_files = GetAllFiles(HEADS)
   local kick_files = GetAllFiles(KICKS)
@@ -114,19 +127,27 @@ function Main()
     reaper.SetEditCurPos(kick_transient_position, false, false)
     reaper.SetOnlyTrackSelected(kick_track)
     reaper.InsertMedia(kick, 0)
-    local kick_item = reaper.GetSelectedMediaItem(0, 0) -- Get the inserted item
+    local kick_item = reaper.GetTrackMediaItem(kick_track, reaper.CountTrackMediaItems(kick_track)-1)
+
+    -- Kick Octave
     reaper.SetEditCurPos(kick_transient_position, false, false)
+    reaper.SetOnlyTrackSelected(kick_octave_track)
+    reaper.InsertMedia(kick, 0)
+    local kick_octave_item = reaper.GetTrackMediaItem(kick_octave_track, reaper.CountTrackMediaItems(kick_octave_track)-1)
+    kick_octave_take = reaper.GetActiveTake(kick_octave_item)
+    reaper.SetMediaItemTakeInfo_Value(kick_octave_take, "D_PITCH", -12) -- apply octave shift
 
     -- Body
+    reaper.SetEditCurPos(kick_transient_position, false, false)
     reaper.SetOnlyTrackSelected(body_track)
     reaper.InsertMedia(body, 0)
-    local body_item = reaper.GetSelectedMediaItem(0, 0) -- Get the inserted item
-    reaper.SetEditCurPos(kick_transient_position, false, false)
+    local body_item = reaper.GetTrackMediaItem(body_track, reaper.CountTrackMediaItems(body_track)-1)
 
     -- Tail 
+    reaper.SetEditCurPos(kick_transient_position, false, false)
     reaper.SetOnlyTrackSelected(tail_track)
     reaper.InsertMedia(tail, 0)
-    local tail_item = reaper.GetSelectedMediaItem(0, 0) -- Get the inserted item      
+    local tail_item = reaper.GetTrackMediaItem(tail_track, reaper.CountTrackMediaItems(tail_track)-1)
 
     --local kick_take = reaper.GetActiveTake(kick_item)
     --local body_take = reaper.GetActiveTake(body_item)
@@ -136,8 +157,9 @@ function Main()
     local tail_start = reaper.GetMediaItemInfo_Value(tail_item, "D_POSITION")
     local tail_length = reaper.GetMediaItemInfo_Value(tail_item, "D_LENGTH")
 
-    reaper.GetSet_LoopTimeRange(true, false, head_start, tail_start + tail_length, false)
-    --reaper.Main_OnCommand(40508, 0) -- trim item, do i need this?
+    local timeline_end = find_end()
+    --reaper.GetSet_LoopTimeRange(true, false, head_start, tail_start + tail_length, false)
+    reaper.GetSet_LoopTimeRange(true, false, head_start, timeline_end, false)
 
     -- Generate output filename        
     local output_dir = string.format("%s/", OUTPUT_FOLDER)
