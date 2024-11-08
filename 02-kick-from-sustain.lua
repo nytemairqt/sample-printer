@@ -60,16 +60,15 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/kick-from-sustain/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/kick-from-sustain/output"    
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/output"    
 
-  local NUM_GENERATIONS = 1
-  local PAD_RIGHT = true 
-  local PAD_AMOUNT = 1
-  local FADE_IN = 0 -- in seconds 
-  local FADE_OUT = 0
+  local NUM_GENERATIONS = 200
+  local MAX_LENGTH = 2  
+  local FADE_IN = 0
+  local FADE_OUT = 0.1
 
-  reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
+  reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
   
   local track = reaper.GetTrack(0, 7)
 
@@ -82,35 +81,36 @@ function Main()
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
-    local seed = math.random(1, #files)   
-
     reaper.ClearConsole()
     reaper.ShowConsoleMsg("\nGeneration: " ..i)
     reaper.Undo_BeginBlock()
-  
+    reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
+    
+    local seed = math.random(1, #files)   
     local kick = files[seed]
     
     -- Head
-
     reaper.SetOnlyTrackSelected(track)
     reaper.InsertMedia(kick, 0)
     local kick_item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
     local kick_start = reaper.GetMediaItemInfo_Value(kick_item, "D_POSITION")
     local kick_length = reaper.GetMediaItemInfo_Value(kick_item, "D_LENGTH")
-    local kick_take = reaper.GetActiveTake(kick_item)
-    --reaper.SetMediaItemTakeInfo_Value(kick_take, "D_PITCH", -12) -- apply octave shift
-    reaper.SetMediaItemInfo_Value(kick_item, "D_LENGTH", kick_length * .2)
+    local kick_take = reaper.GetActiveTake(kick_item)    
+    local pitch_shift = math.random() * -12
+    reaper.SetMediaItemTakeInfo_Value(kick_take, "D_PITCH", pitch_shift)
+    if kick_length > MAX_LENGTH then 
+      reaper.SetMediaItemInfo_Value(kick_item, "D_LENGTH", MAX_LENGTH)
+    end 
     local body_fade = reaper.GetMediaItemInfo_Value(kick_item, "D_LENGTH")
     reaper.SetMediaItemInfo_Value(kick_item, "D_FADEOUTLEN", body_fade)
-    reaper.SetMediaItemInfo_Value(kick_item, "C_FADEOUTSHAPE", 6)
+    reaper.SetMediaItemInfo_Value(kick_item, "C_FADEOUTSHAPE", 4) -- exponential
 
     -- Start & End Points
-    reaper.GetSet_LoopTimeRange(true, false, kick_start, 2.0, false)
+    reaper.GetSet_LoopTimeRange(true, false, kick_start, MAX_LENGTH, false)
     
-
     -- Generate output filename        
     local output_dir = string.format("%s/", OUTPUT_FOLDER)
-    local output_file = string.format("processed_%s.wav", i)
+    local output_file = string.format("kick_%s.wav", i)
 
     reaper.ShowConsoleMsg("\nOutput Path: " ..output_dir)
     reaper.ShowConsoleMsg("\nOutput Filename: " ..output_file)
@@ -132,14 +132,10 @@ function Main()
     reaper.GetSetProjectInfo_String(0, "RENDER_PATTERN", output_file, true)
     
     -- Render
-    --reaper.Main_OnCommand(42230, 0) -- Render project using last settings
+    reaper.Main_OnCommand(42230, 0) -- Render project using last settings
     
     -- Clean Up
-    --cleanup(head_track)
-    --cleanup(kick_track)
-    --cleanup(body_track)
-    --cleanup(tail_track)
-    
+    cleanup(track)       
     
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)

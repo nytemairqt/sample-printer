@@ -54,9 +54,9 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/process-raw-audio/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/process-raw-audio/output"    
-  local NUM_GENERATIONS = 500
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
+  local NUM_GENERATIONS = 10
   local SWAP_STEREO = true
   local REVERSE = true
   local RANDOM_TRIM = true
@@ -134,7 +134,7 @@ function Main()
 
         -- Generate output filename        
         local output_dir = string.format("%s/", OUTPUT_FOLDER)
-        local output_file = string.format("processed_%s.wav", i)
+        local output_file = string.format("head_%s.wav", i)
 
         reaper.ShowConsoleMsg("\nOutput Path: " ..output_dir)
         reaper.ShowConsoleMsg("\nOutput Filename: " ..output_file)

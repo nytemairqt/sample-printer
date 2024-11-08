@@ -99,6 +99,7 @@ function Main()
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
+    reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
     local head_seed = math.random(1, #head_files)
     local kick_seed = math.random(1, #kick_files)
     local body_seed = math.random(1, #body_files)
