@@ -7,7 +7,7 @@ require "functions"
 -- Hyperparameters
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/output"    
-NUM_GENERATIONS = 200
+NUM_GENERATIONS = 1
 RANDOMIZE_FX = false
 MAX_LENGTH = 2  
 FADE_IN = 0
@@ -93,8 +93,7 @@ function Main()
     
     -- Clean Up
     cleanup(track)       
-    
-    
+        
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
   end

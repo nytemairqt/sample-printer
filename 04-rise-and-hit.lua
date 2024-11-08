@@ -4,41 +4,40 @@ folder_path = path:match('^.+[\\/]')
 package.path = folder_path .. '?.lua;'
 require "functions"
 
--- Main function
+-- Hyperparameters
+OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/output"    
+HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/01-heads"
+KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
+BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/03-bodies"
+TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/04-tails"
+NUM_GENERATIONS = 1
+RANDOMIZE_FX = false
+PAD_RIGHT = true 
+PAD_AMOUNT = 1
+FADE_IN = 0 -- in seconds 
+FADE_OUT = 0
+
 function Main()
-  -- Hyperparameters
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/output"    
-
-  local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/01-heads"
-  local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
-  local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/03-bodies"
-  local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/04-tails"
-
-  local NUM_GENERATIONS = 1
-  local PAD_RIGHT = true 
-  local PAD_AMOUNT = 1
-  local FADE_IN = 0 -- in seconds 
-  local FADE_OUT = 0
-
-  reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
-
-  -- Check if we have enough tracks
-  if reaper.CountTracks(project) < 5 then
-      reaper.ShowMessageBox("Project needs at least 5 tracks!", "Error", 0)
-      return
-  end
-
-  local head_track = reaper.GetTrack(0, 4) -- kick track
+  -- Initial Setup
+  local head_track = reaper.GetTrack(0, 4)
   local kick_track = reaper.GetTrack(0, 5) 
   local kick_octave_track = reaper.GetTrack(0, 6)
   local body_track = reaper.GetTrack(0, 7) 
-  local tail_track = reaper.GetTrack(0, 8) 
+  local tail_track = reaper.GetTrack(0, 8)
+  unsolo_tracks() 
+  reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
+
+  -- Solo tracks in place 
+  reaper.SetMediaTrackInfo_Value(head_track, "I_SOLO", 2) 
+  reaper.SetMediaTrackInfo_Value(kick_track, "I_SOLO", 2) 
+  reaper.SetMediaTrackInfo_Value(kick_octave_track, "I_SOLO", 2) 
+  reaper.SetMediaTrackInfo_Value(body_track, "I_SOLO", 2) 
+  reaper.SetMediaTrackInfo_Value(tail_track, "I_SOLO", 2) 
 
   -- Get Files & Create Output Dir
   if not reaper.file_exists(OUTPUT_FOLDER) then
     reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
-
   local head_files = get_files(HEADS)
   local kick_files = get_files(KICKS)
   local body_files = get_files(BODIES)
@@ -46,15 +45,23 @@ function Main()
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
-    reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
-    local head_seed = math.random(1, #head_files)
-    local kick_seed = math.random(1, #kick_files)
-    local body_seed = math.random(1, #body_files)
-    local tail_seed = math.random(1, #tail_files)
-
     reaper.ClearConsole()
     reaper.ShowConsoleMsg("\nGeneration: " ..i)
     reaper.Undo_BeginBlock()
+    reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
+
+    if RANDOMIZE_FX then 
+      randomize_fx(head_track)
+      randomize_fx(kick_track)
+      randomize_fx(kick_octave_track)
+      randomize_fx(body_track)
+      randomize_fx(tail_track)
+    end
+
+    local head_seed = math.random(1, #head_files)
+    local kick_seed = math.random(1, #kick_files)
+    local body_seed = math.random(1, #body_files)
+    local tail_seed = math.random(1, #tail_files)    
   
     local head = head_files[head_seed]
     local kick = kick_files[kick_seed]
@@ -142,6 +149,7 @@ function Main()
     -- Clean Up
     --cleanup(head_track)
     --cleanup(kick_track)
+    --cleanup(kick_octave_track)
     --cleanup(body_track)
     --cleanup(tail_track)
     

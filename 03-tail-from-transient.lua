@@ -9,55 +9,62 @@ require "functions"
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/output"    
 NUM_GENERATIONS = 5
+RANDOMIZE_FX = false
 MAX_LENGTH = 1.5  
 FADE_IN = 0
 FADE_OUT = 0.5
 
-function Main()
-  
-
-  reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
-  
+function Main()  
+  -- Initial Setup
   local track = reaper.GetTrack(0, 2)
+  unsolo_tracks()
+  reaper.SetEditCurPos(0.0, true, false)
+  reaper.SetOnlyTrackSelected(track)
+  reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 2)   
 
   -- Get Files & Create Output Dir
+  local files = get_files(INPUT_FOLDER)
   if not reaper.file_exists(OUTPUT_FOLDER) then
     reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
-
-  local files = get_files(INPUT_FOLDER)
-
+  if not files then 
+    reaper.ShowMessageBox("Unable to load audio files.", "Error", 0)
+    return 
+  end   
+  
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
     reaper.ClearConsole()
     reaper.ShowConsoleMsg("\nGeneration: " ..i)
     reaper.Undo_BeginBlock()
-    reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
+    reaper.SetEditCurPos(0.0, true, false)
+
+    if RANDOMIZE_FX then 
+      randomize_fx(track)
+    end
     
     local seed = math.random(1, #files)   
-    local transient = files[seed]
-    
-    -- Head
-    reaper.SetOnlyTrackSelected(track)
-    reaper.InsertMedia(transient, 0)
-    local transient_item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
-    local transient_start = reaper.GetMediaItemInfo_Value(transient_item, "D_POSITION")
-    local transient_length = reaper.GetMediaItemInfo_Value(transient_item, "D_LENGTH")
-    local transient_take = reaper.GetActiveTake(transient_item)    
+    local file = files[seed]
+
+    reaper.InsertMedia(file, 0)
+    local item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
+    local start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    local length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+    local take = reaper.GetActiveTake(item)    
     local pitch_shift = math.random() * -12
 
     -- Trim
-    start, length = trim(transient_start, transient_length)
+    start, length = trim(start, length)
     reaper.GetSet_LoopTimeRange(true, false, start, length, false)
     reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
 
     -- Fade
-    reaper.SetMediaItemTakeInfo_Value(transient_take, "D_PITCH", pitch_shift)
-    reaper.SetMediaItemInfo_Value(transient_item, "D_FADEOUTLEN", length)
-    reaper.SetMediaItemInfo_Value(transient_item, "C_FADEOUTSHAPE", 4) -- exponential
+    reaper.SetMediaItemTakeInfo_Value(take, "D_PITCH", pitch_shift)
+    reaper.SetMediaItemInfo_Value(item, "D_FADEOUTLEN", length)
+    reaper.SetMediaItemInfo_Value(item, "C_FADEOUTSHAPE", 4) -- exponential
 
     -- Start & End Points
-    reaper.GetSet_LoopTimeRange(true, false, transient_start, MAX_LENGTH, false)
+    reaper.GetSet_LoopTimeRange(true, false, start, MAX_LENGTH, false)
     
     -- Generate output filename        
     local output_dir = string.format("%s/", OUTPUT_FOLDER)

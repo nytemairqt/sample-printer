@@ -9,12 +9,12 @@ require "functions"
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
 NUM_GENERATIONS = 1
+RANDOMIZE_FX = true
 SWAP_STEREO = true
 REVERSE = true
 RANDOM_TRIM = true
 PAD_RIGHT = true 
 PAD_AMOUNT = 8
-RANDOMIZE_FX = true 
 FADE_IN = 0
 FADE_OUT = 0.3
 MAX_PITCH_SHIFT = -24
