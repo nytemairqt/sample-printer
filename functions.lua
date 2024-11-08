@@ -57,7 +57,7 @@ function randomize_fx(track)
   for fx_idx = 0, fx_count - 1 do 
     local param_count = reaper.TrackFX_GetNumParams(track, fx_idx)
     local _, fx_name = reaper.TrackFX_GetFXName(track, fx_idx, "")
-    local skip_names = {"VST3: OTT (Xfer Records)", "VST3: Morph EQ (Minimal)", "VST: Gullfoss (Soundtheory)", "VST: ReaEQ (Cockos)", "VST3: Transient Master (Native Instruments)", "VST: KClip Zero (Kazrog)", "VST3: Ozone 9 Elements (iZotope, Inc.)"}
+    local skip_names = {"VST3: OTT (Xfer Records)", "VST: Gullfoss (Soundtheory)", "VST: ReaEQ (Cockos)", "VST3: Transient Master (Native Instruments)", "VST: KClip Zero (Kazrog)", "VST3: Ozone 9 Elements (iZotope, Inc.)"}
     local skip_fx = false 
     for _, keyword in ipairs(skip_names) do 
       if fx_name == keyword then 
