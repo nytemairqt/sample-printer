@@ -1,69 +1,8 @@
--- lol
-function print(text)
-  reaper.ShowConsoleMsg(text)
-end
-
-function unsolo_tracks()
-  local num_tracks = reaper.CountTracks(0)
-  for i = 0, num_tracks - 1 do
-      local track = reaper.GetTrack(0, i)
-      reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 0)
-  end
-end
-
--- Recursive file crawl
-function GetAllFiles(folder)
-  local files = {}
-  
-  local function scanFolder(currentFolder)
-    local cmd
-    if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then
-      -- Get files in current folder
-      cmd = 'dir /b /s "' .. currentFolder .. '\\*.wav"'
-    else
-      cmd = 'find "' .. currentFolder .. '" -name "*.wav"'
-    end
-    
-    local p = io.popen(cmd)
-    for file in p:lines() do
-      table.insert(files, file)  -- On Windows with /s flag, file paths are already absolute
-    end
-    p:close()
-  end
-  
-  scanFolder(folder)
-  return files
-end
-
-function pad(length, pad_amount)
-  return length + pad_amount
-end
-
-function cleanup(track)
-  while reaper.GetTrackNumMediaItems(track) > 0 do
-    local item = reaper.GetTrackMediaItem(track, 0)
-    if item then
-      reaper.DeleteTrackMediaItem(track, item)
-    end
-  end
-end
-
-function find_end()
-    local last_position = 0
-    local num_items = reaper.CountMediaItems(0)
-
-    for i = 0, num_items - 1 do
-        local item = reaper.GetMediaItem(0, i)
-        local item_end = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-        
-        -- Update last_position if the current item end is further
-        if item_end > last_position then
-            last_position = item_end
-        end
-    end
-
-  return last_position
-end
+-- Import
+_, path = reaper.get_action_context()
+folder_path = path:match('^.+[\\/]')
+package.path = folder_path .. '?.lua;'
+require "functions"
 
 -- Main function
 function Main()
@@ -100,10 +39,10 @@ function Main()
     reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
 
-  local head_files = GetAllFiles(HEADS)
-  local kick_files = GetAllFiles(KICKS)
-  local body_files = GetAllFiles(BODIES)
-  local tail_files = GetAllFiles(TAILS)
+  local head_files = get_files(HEADS)
+  local kick_files = get_files(KICKS)
+  local body_files = get_files(BODIES)
+  local tail_files = get_files(TAILS)
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
