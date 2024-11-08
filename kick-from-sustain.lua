@@ -60,8 +60,8 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/input"    
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/rise-and-hit" -- change to 
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/kick-from-sustain/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/kick-from-sustain/output"    
 
   local NUM_GENERATIONS = 1
   local PAD_RIGHT = true 

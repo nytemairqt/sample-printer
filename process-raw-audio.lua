@@ -54,8 +54,8 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/tails"    
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/process-raw-audio/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/process-raw-audio/output"    
   local NUM_GENERATIONS = 500
   local SWAP_STEREO = true
   local REVERSE = true

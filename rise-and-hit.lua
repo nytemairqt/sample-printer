@@ -60,12 +60,12 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/rise-and-hit"    
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/output"    
 
-  local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/01-heads"
-  local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/02-kicks"
-  local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/03-bodies"
-  local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/04-tails"
+  local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/01-heads"
+  local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
+  local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/03-bodies"
+  local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/04-tails"
 
   local NUM_GENERATIONS = 1
   local PAD_RIGHT = true 
