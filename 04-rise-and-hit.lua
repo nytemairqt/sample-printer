@@ -3,6 +3,14 @@ function print(text)
   reaper.ShowConsoleMsg(text)
 end
 
+function unsolo_tracks()
+  local num_tracks = reaper.CountTracks(0)
+  for i = 0, num_tracks - 1 do
+      local track = reaper.GetTrack(0, i)
+      reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 0)
+  end
+end
+
 -- Recursive file crawl
 function GetAllFiles(folder)
   local files = {}
@@ -60,7 +68,7 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/output"    
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/output"    
 
   local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/01-heads"
   local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
@@ -81,11 +89,11 @@ function Main()
       return
   end
 
-  local head_track = reaper.GetTrack(0, 2) -- kick track
-  local kick_track = reaper.GetTrack(0, 3) 
-  local kick_octave_track = reaper.GetTrack(0, 4)
-  local body_track = reaper.GetTrack(0, 5) 
-  local tail_track = reaper.GetTrack(0, 6) 
+  local head_track = reaper.GetTrack(0, 4) -- kick track
+  local kick_track = reaper.GetTrack(0, 5) 
+  local kick_octave_track = reaper.GetTrack(0, 6)
+  local body_track = reaper.GetTrack(0, 7) 
+  local tail_track = reaper.GetTrack(0, 8) 
 
   -- Get Files & Create Output Dir
   if not reaper.file_exists(OUTPUT_FOLDER) then
@@ -204,6 +212,7 @@ function Main()
   end
   
   -- Refresh UI
+  unsolo_tracks()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(false)
 end

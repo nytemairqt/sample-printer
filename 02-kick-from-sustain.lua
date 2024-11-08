@@ -27,6 +27,14 @@ function GetAllFiles(folder)
   return files
 end
 
+function unsolo_tracks()
+  local num_tracks = reaper.CountTracks(0)
+  for i = 0, num_tracks - 1 do
+      local track = reaper.GetTrack(0, i)
+      reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 0)
+  end
+end
+
 function pad(length, pad_amount)
   return length + pad_amount
 end
@@ -68,9 +76,10 @@ function Main()
   local FADE_IN = 0
   local FADE_OUT = 0.1
 
+  unsolo_tracks()
   reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
   
-  local track = reaper.GetTrack(0, 7)
+  local track = reaper.GetTrack(0, 1)
 
   -- Get Files & Create Output Dir
   if not reaper.file_exists(OUTPUT_FOLDER) then
@@ -137,11 +146,13 @@ function Main()
     -- Clean Up
     cleanup(track)       
     
+    
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
   end
   
   -- Refresh UI
+  unsolo_tracks()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(false)
 end

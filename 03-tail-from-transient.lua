@@ -38,6 +38,14 @@ function trim(start, length)
   return new_start, new_length
 end
 
+function unsolo_tracks()
+  local num_tracks = reaper.CountTracks(0)
+  for i = 0, num_tracks - 1 do
+      local track = reaper.GetTrack(0, i)
+      reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 0)
+  end
+end
+
 function cleanup(track)
   while reaper.GetTrackNumMediaItems(track) > 0 do
     local item = reaper.GetTrackMediaItem(track, 0)
@@ -67,8 +75,8 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/tail-from-transient/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/tail-from-transient/output"    
+  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/input"
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/output"    
 
   local NUM_GENERATIONS = 5
   local MAX_LENGTH = 1.5  
@@ -77,7 +85,7 @@ function Main()
 
   reaper.SetEditCurPos(0.0, true, false) -- reset cursor position
   
-  local track = reaper.GetTrack(0, 8)
+  local track = reaper.GetTrack(0, 2)
 
   -- Get Files & Create Output Dir
   if not reaper.file_exists(OUTPUT_FOLDER) then
@@ -152,6 +160,7 @@ function Main()
   end
   
   -- Refresh UI
+  unsolo_tracks()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(false)
 end

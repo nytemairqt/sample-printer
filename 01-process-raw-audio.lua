@@ -1,12 +1,28 @@
--- lol
+-- Hyperparameters
+
+INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
+OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
+NUM_GENERATIONS = 5
+SWAP_STEREO = true
+REVERSE = true
+RANDOM_TRIM = true
+PAD_RIGHT = true 
+PAD_AMOUNT = 8
+RANDOMIZE_FX = true 
+FADE_IN = 0
+FADE_OUT = 0.3
+MAX_PITCH_SHIFT = -24
+
+-- Functions
+
 function print(text)
+  -- Prints to console.
   reaper.ShowConsoleMsg(text)
 end
 
--- Recursive file crawl
 function GetAllFiles(folder)
+  -- Recursive file search.
   local files = {}
-  
   local function scanFolder(currentFolder)
     local cmd
     if reaper.GetOS() == "Win32" or reaper.GetOS() == "Win64" then
@@ -14,24 +30,33 @@ function GetAllFiles(folder)
       cmd = 'dir /b /s "' .. currentFolder .. '\\*.wav"'
     else
       cmd = 'find "' .. currentFolder .. '" -name "*.wav"'
-    end
-    
+    end    
     local p = io.popen(cmd)
     for file in p:lines() do
       table.insert(files, file)  -- On Windows with /s flag, file paths are already absolute
     end
     p:close()
-  end
-  
+  end  
   scanFolder(folder)
   return files
 end
 
+function unsolo_tracks()
+  -- Unsolos all tracks.
+  local num_tracks = reaper.CountTracks(0)
+  for i = 0, num_tracks - 1 do
+      local track = reaper.GetTrack(0, i)
+      reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 0)
+  end
+end
+
 function roll()
+  -- Coin Flip
   return math.random() < 0.5
 end
 
 function trim(start, length)
+  -- Trims a random start & end point, scaled by the offset scalar.
   local scalar = .4
   local new_start = start + (length * (math.random() * scalar))
   local new_length = (start + length) - (length * (math.random() * scalar))
@@ -39,10 +64,53 @@ function trim(start, length)
 end
 
 function pad(length, pad_amount)
+  -- Extends the length of the clip to the right.
   return length + pad_amount
 end
 
+function randomize_fx(track)
+  local fx_count = reaper.TrackFX_GetCount(track)
+  for fx_idx = 0, fx_count - 1 do 
+    local param_count = reaper.TrackFX_GetNumParams(track, fx_idx)
+    local _, fx_name = reaper.TrackFX_GetFXName(track, fx_idx, "")
+    local skip_names = {"VST3: OTT (Xfer Records)", "VST3: Morph EQ (Minimal)", "VST: Gullfoss (Soundtheory)", "VST: ReaEQ (Cockos)", "VST3: Transient Master (Native Instruments)", "VST: KClip Zero (Kazrog)", "VST3: Ozone 9 Elements (iZotope, Inc.)"}
+    local skip_fx = false 
+
+    for _, keyword in ipairs(skip_names) do 
+      if fx_name == keyword then 
+        print("\nSkipping: "..fx_name)
+        skip_fx = true 
+        break
+      end 
+    end 
+    if not skip_fx then 
+      print("\nFX: "..fx_name)
+      for param_idx = 0, param_count - 1 do 
+        local _, min, max, _ = reaper.TrackFX_GetParamEx(track, fx_idx, param_idx)
+        local _, param_name = reaper.TrackFX_GetParamName(track, fx_idx, param_idx, "")
+        local skip_keywords = {"bypass", "wet", "dry", "dry/wet", "mix", "enable", "on/off", "active", "power", "phase", "polarity", "routing", "midi", "input", "output", "gain", "drive", "makeup", "makeup_db"}
+        local skip_param = false        
+        param_name = param_name:lower()
+        for _, keyword in ipairs(skip_keywords) do 
+          if param_name:find(keyword) then 
+            skip_param = true 
+            break
+          end 
+        end        
+        if not skip_param then           
+          local val = min + (math.random() * max) 
+          if param_name == "feedback" then 
+            val = min + (math.random() * (max * 0.9))   
+          end
+          reaper.TrackFX_SetParamNormalized(track, fx_idx, param_idx, val)
+        end 
+      end 
+    end     
+  end 
+end
+
 function cleanup(track)
+  -- Deletes all media items on the track.
   while reaper.GetTrackNumMediaItems(track) > 0 do
     local item = reaper.GetTrackMediaItem(track, 0)
     if item then
@@ -51,21 +119,14 @@ function cleanup(track)
   end
 end
 
--- Main function
 function Main()
-  -- Hyperparameters
-  local INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
-  local NUM_GENERATIONS = 10
-  local SWAP_STEREO = true
-  local REVERSE = true
-  local RANDOM_TRIM = true
-  local PAD_RIGHT = true 
-  local PAD_AMOUNT = 8
-  local FADE_IN = 0 -- in seconds 
-  local FADE_OUT = 0.3
-  local MAX_PITCH_SHIFT = -24
-
+  -- Initial Setup
+  local track = reaper.GetTrack(0, 0)
+  unsolo_tracks()  
+  reaper.SetEditCurPos(0.0, true, false)
+  reaper.SetOnlyTrackSelected(track)
+  reaper.SetMediaTrackInfo_Value(track, "I_SOLO", 2) 
+  
   -- Get Files & Create Output Dir
   local files = GetAllFiles(INPUT_FOLDER)
   if not reaper.file_exists(OUTPUT_FOLDER) then
@@ -75,27 +136,22 @@ function Main()
   if not files then 
     reaper.ShowMessageBox("Unable to load audio files.", "Error", 0)
     return 
-  end 
+  end   
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
-    local seed = math.random(1, #files)
-    local file = files[seed]
-    reaper.ClearConsole()
     reaper.ShowConsoleMsg("\nGeneration: " ..i)
     reaper.Undo_BeginBlock()
-    
-    -- Import the audio file
-    local track = reaper.GetTrack(0, 0) -- Get first track (where VST plugins are)
-    if not track then
-      track = reaper.InsertTrackAtIndex(0, true)
-    end    
 
-    reaper.ShowConsoleMsg("\nUsing file: " ..file)
-    -- Insert media and get item
-    reaper.InsertMedia(file, 0) -- Insert the media file
-    local item = reaper.GetSelectedMediaItem(0, 0) -- Get the inserted item
-    
+    if RANDOMIZE_FX then 
+      randomize_fx(track)
+    end 
+
+    -- Import audio
+    local seed = math.random(1, #files)
+    local file = files[seed]
+    reaper.InsertMedia(file, 0) 
+    local item = reaper.GetSelectedMediaItem(0, 0)       
     if item then
       local take = reaper.GetActiveTake(item)
       if take then
@@ -127,6 +183,7 @@ function Main()
           reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
         end      
 
+        -- Pad Right Side
         if PAD_RIGHT then 
           length = pad(length, PAD_AMOUNT)  
           reaper.GetSet_LoopTimeRange(true, false, start, length, false)
@@ -135,7 +192,6 @@ function Main()
         -- Generate output filename        
         local output_dir = string.format("%s/", OUTPUT_FOLDER)
         local output_file = string.format("head_%s.wav", i)
-
         reaper.ShowConsoleMsg("\nOutput Path: " ..output_dir)
         reaper.ShowConsoleMsg("\nOutput Filename: " ..output_file)
         
@@ -157,18 +213,20 @@ function Main()
         
         -- Render
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
-        reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
+        --reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
         -- Clean Up
         cleanup(track)
       end
-    end
+    end   
 
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
   end
   
   -- Refresh UI
+  unsolo_tracks()
+  reaper.ClearConsole()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(false)
 end
