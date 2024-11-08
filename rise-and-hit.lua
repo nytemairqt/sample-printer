@@ -60,12 +60,12 @@ end
 -- Main function
 function Main()
   -- Hyperparameters
-  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/05-generated"    
+  local OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/output/rise-and-hit"    
 
-  local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/01-heads"
-  local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/02-kicks"
-  local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/output/03-bodies"
-  local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/output/04-tails"
+  local HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/01-heads"
+  local KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/02-kicks"
+  local BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/03-bodies"
+  local TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/input-rise-and-hit/04-tails"
 
   local NUM_GENERATIONS = 1
   local PAD_RIGHT = true 
@@ -158,8 +158,12 @@ function Main()
     local tail_length = reaper.GetMediaItemInfo_Value(tail_item, "D_LENGTH")
 
     local timeline_end = find_end()
-    --reaper.GetSet_LoopTimeRange(true, false, head_start, tail_start + tail_length, false)
     reaper.GetSet_LoopTimeRange(true, false, head_start, timeline_end, false)
+
+    -- Trim Body to Tail End & Fade 
+    reaper.SetMediaItemInfo_Value(body_item, "D_LENGTH", tail_length * .2)
+    local body_fade = reaper.GetMediaItemInfo_Value(body_item, "D_LENGTH")
+    reaper.SetMediaItemInfo_Value(body_item, "D_FADEOUTLEN", body_fade)
 
     -- Generate output filename        
     local output_dir = string.format("%s/", OUTPUT_FOLDER)
