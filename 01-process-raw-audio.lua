@@ -2,7 +2,7 @@
 
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
-NUM_GENERATIONS = 5
+NUM_GENERATIONS = 200
 SWAP_STEREO = true
 REVERSE = true
 RANDOM_TRIM = true
@@ -69,13 +69,13 @@ function pad(length, pad_amount)
 end
 
 function randomize_fx(track)
+  -- Randomizes all FX on the selected track, skipping FX and parameters based on a dictionary.
   local fx_count = reaper.TrackFX_GetCount(track)
   for fx_idx = 0, fx_count - 1 do 
     local param_count = reaper.TrackFX_GetNumParams(track, fx_idx)
     local _, fx_name = reaper.TrackFX_GetFXName(track, fx_idx, "")
     local skip_names = {"VST3: OTT (Xfer Records)", "VST3: Morph EQ (Minimal)", "VST: Gullfoss (Soundtheory)", "VST: ReaEQ (Cockos)", "VST3: Transient Master (Native Instruments)", "VST: KClip Zero (Kazrog)", "VST3: Ozone 9 Elements (iZotope, Inc.)"}
     local skip_fx = false 
-
     for _, keyword in ipairs(skip_names) do 
       if fx_name == keyword then 
         print("\nSkipping: "..fx_name)
@@ -132,7 +132,6 @@ function Main()
   if not reaper.file_exists(OUTPUT_FOLDER) then
     reaper.RecursiveCreateDirectory(OUTPUT_FOLDER, 0)
   end  
-  reaper.ShowConsoleMsg("\nFound: " ..#files .. " files")
   if not files then 
     reaper.ShowMessageBox("Unable to load audio files.", "Error", 0)
     return 
@@ -140,8 +139,10 @@ function Main()
 
   -- Loop & Process each file
   for i = 1, NUM_GENERATIONS, 1 do
+    reaper.ClearConsole()
     reaper.ShowConsoleMsg("\nGeneration: " ..i)
     reaper.Undo_BeginBlock()
+    reaper.SetEditCurPos(0.0, true, false)
 
     if RANDOMIZE_FX then 
       randomize_fx(track)
@@ -151,7 +152,7 @@ function Main()
     local seed = math.random(1, #files)
     local file = files[seed]
     reaper.InsertMedia(file, 0) 
-    local item = reaper.GetSelectedMediaItem(0, 0)       
+    local item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)   
     if item then
       local take = reaper.GetActiveTake(item)
       if take then
@@ -213,7 +214,7 @@ function Main()
         
         -- Render
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
-        --reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
+        reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
         -- Clean Up
         cleanup(track)
@@ -225,8 +226,7 @@ function Main()
   end
   
   -- Refresh UI
-  unsolo_tracks()
-  reaper.ClearConsole()
+  unsolo_tracks()  
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(false)
 end
