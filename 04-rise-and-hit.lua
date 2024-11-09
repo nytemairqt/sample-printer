@@ -6,20 +6,21 @@ require "functions"
 
 -- Hyperparameters
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/output"    
-HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/01-heads"
-KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
-BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/03-bodies"
-TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/04-tails"
-NUM_GENERATIONS = 1
+HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/01-heads"
+KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/02-kicks"
+BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/03-bodies"
+TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/04-tails"
+NUM_GENERATIONS = 5
 RANDOMIZE_FX = true
 RANDOMIZE_REVERB = true 
 PAD_RIGHT = true 
-PAD_AMOUNT = 1
+PAD_AMOUNT = 3
 FADE_IN = 0 -- in seconds 
-FADE_OUT = 0
+FADE_OUT = 0.2
 
 function Main()
   -- Initial Setup
+  local group_track = reaper.GetTrack(0, 3)
   local head_track = reaper.GetTrack(0, 4)
   local kick_track = reaper.GetTrack(0, 5) 
   local kick_octave_track = reaper.GetTrack(0, 6)
@@ -29,6 +30,7 @@ function Main()
   reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
 
   -- Solo tracks in place 
+  reaper.SetMediaTrackInfo_Value(group_track, "I_SOLO", 2) 
   reaper.SetMediaTrackInfo_Value(head_track, "I_SOLO", 2) 
   reaper.SetMediaTrackInfo_Value(kick_track, "I_SOLO", 2) 
   reaper.SetMediaTrackInfo_Value(kick_octave_track, "I_SOLO", 2) 
@@ -121,6 +123,7 @@ function Main()
     local tail_length = reaper.GetMediaItemInfo_Value(tail_item, "D_LENGTH")
 
     local timeline_end = find_end()
+    timeline_end = pad(timeline_end, PAD_AMOUNT)
     reaper.GetSet_LoopTimeRange(true, false, head_start, timeline_end, false)
 
     -- Trim Body to Tail End & Fade 
@@ -152,16 +155,15 @@ function Main()
     reaper.GetSetProjectInfo_String(0, "RENDER_PATTERN", output_file, true)
     
     -- Render
-    --reaper.Main_OnCommand(42230, 0) -- Render project using last settings
+    reaper.Main_OnCommand(42230, 0) -- Render project using last settings
     
     -- Clean Up
-    --cleanup(head_track)
-    --cleanup(kick_track)
-    --cleanup(kick_octave_track)
-    --cleanup(body_track)
-    --cleanup(tail_track)
-    
-    
+    cleanup(head_track)
+    cleanup(kick_track)
+    cleanup(kick_octave_track)
+    cleanup(body_track)
+    cleanup(tail_track)
+        
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
   end
