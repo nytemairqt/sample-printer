@@ -8,8 +8,9 @@ require "functions"
 
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
-NUM_GENERATIONS = 1
+NUM_GENERATIONS = 200
 RANDOMIZE_FX = true
+RANDOMIZE_REVERB = true
 SWAP_STEREO = true
 REVERSE = true
 RANDOM_TRIM = true
@@ -47,6 +48,9 @@ function Main()
     if RANDOMIZE_FX then 
       randomize_fx(track)
     end 
+    if RANDOMIZE_REVERB then 
+      randomize_reverb(track)
+    end
 
     -- Import audio
     local seed = math.random(1, #files)
@@ -79,7 +83,7 @@ function Main()
         -- Trim Item
         reaper.GetSet_LoopTimeRange(true, false, start, start + length, false)
         if RANDOM_TRIM then 
-          start, length = trim(start, length)
+          start, length = trim(start, length, .4)
           reaper.GetSet_LoopTimeRange(true, false, start, length, false)
           reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
         end      
@@ -114,10 +118,10 @@ function Main()
         
         -- Render
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
-        --reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
+        reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
         -- Clean Up
-        --cleanup(track)
+        cleanup(track)
       end
     end   
 

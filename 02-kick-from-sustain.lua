@@ -7,8 +7,9 @@ require "functions"
 -- Hyperparameters
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/02-kick-from-sustain/output"    
-NUM_GENERATIONS = 1
-RANDOMIZE_FX = false
+NUM_GENERATIONS = 200
+RANDOMIZE_FX = true
+RANDOMIZE_REVERB = true
 MAX_LENGTH = 2  
 FADE_IN = 0
 FADE_OUT = 0.1
@@ -40,6 +41,9 @@ function Main()
 
     if RANDOMIZE_FX then 
       randomize_fx(track)
+    end
+    if RANDOMIZE_REVERB then 
+      randomize_reverb(track)
     end
     
     local seed = math.random(1, #files)   

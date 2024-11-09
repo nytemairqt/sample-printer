@@ -11,7 +11,8 @@ KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/02-kicks"
 BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/03-bodies"
 TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/rise-and-hit/input/04-tails"
 NUM_GENERATIONS = 1
-RANDOMIZE_FX = false
+RANDOMIZE_FX = true
+RANDOMIZE_REVERB = true 
 PAD_RIGHT = true 
 PAD_AMOUNT = 1
 FADE_IN = 0 -- in seconds 
@@ -56,6 +57,13 @@ function Main()
       randomize_fx(kick_octave_track)
       randomize_fx(body_track)
       randomize_fx(tail_track)
+    end
+    if RANDOMIZE_REVERB then 
+      randomize_reverb(head_track)
+      randomize_reverb(kick_track)
+      randomize_reverb(kick_octave_track)
+      randomize_reverb(body_track)
+      randomize_reverb(tail_track)
     end
 
     local head_seed = math.random(1, #head_files)

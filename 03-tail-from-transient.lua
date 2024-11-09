@@ -8,11 +8,12 @@ require "functions"
 
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/output"    
-NUM_GENERATIONS = 5
-RANDOMIZE_FX = false
+NUM_GENERATIONS = 200
+RANDOMIZE_FX = true
+RANDOMIZE_REVERB = true
 MAX_LENGTH = 1.5  
 FADE_IN = 0
-FADE_OUT = 0.5
+FADE_OUT = 0.2
 
 function Main()  
   -- Initial Setup
@@ -42,6 +43,10 @@ function Main()
     if RANDOMIZE_FX then 
       randomize_fx(track)
     end
+    if RANDOMIZE_REVERB then 
+      randomize_reverb(track)
+      print("hello world")
+    end
     
     local seed = math.random(1, #files)   
     local file = files[seed]
@@ -54,9 +59,12 @@ function Main()
     local pitch_shift = math.random() * -12
 
     -- Trim
-    start, length = trim(start, length)
+    start, length = trim(start, length, .0)
     reaper.GetSet_LoopTimeRange(true, false, start, length, false)
     reaper.Main_OnCommand(40508, 0) -- trim item to selected area  
+
+    item = reaper.GetTrackMediaItem(track, reaper.CountTrackMediaItems(track)-1)
+    local take = reaper.GetActiveTake(item) 
 
     -- Fade
     reaper.SetMediaItemTakeInfo_Value(take, "D_PITCH", pitch_shift)
