@@ -10,13 +10,13 @@ HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/01-heads"
 KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/02-kicks"
 BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/03-bodies"
 TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/04-tails"
-NUM_GENERATIONS = 5
+NUM_GENERATIONS = 1
 RANDOMIZE_FX = true
 RANDOMIZE_REVERB = true 
 PAD_RIGHT = true 
 PAD_AMOUNT = 3
-FADE_IN = 0 -- in seconds 
-FADE_OUT = 0.2
+FADE_IN = 0.3 -- in seconds 
+FADE_OUT = 0.3
 
 function Main()
   -- Initial Setup
@@ -87,6 +87,21 @@ function Main()
     local head_take = reaper.GetActiveTake(head_item)
     reaper.Main_OnCommand(41051, 0) -- toggle take reverse
 
+    -- Randomly Trim Head
+    head_start = head_start + ((head_length * 0.7) * math.random())
+    reaper.GetSet_LoopTimeRange(true, false, head_start, head_length, false)
+    reaper.Main_OnCommand(40508, 0)
+
+    -- Refresh Head Variables
+    head_item = reaper.GetTrackMediaItem(head_track, reaper.CountTrackMediaItems(head_track)-1)
+    head_take = reaper.GetActiveTake(head_item)
+    head_start = reaper.GetMediaItemInfo_Value(head_item, "D_POSITION")
+    head_length = reaper.GetMediaItemInfo_Value(head_item, "D_LENGTH")
+
+    -- Apply Head Fade
+    reaper.SetMediaItemInfo_Value(head_item, "D_FADEINLEN", head_length * .7) -- scalar
+    reaper.SetMediaItemInfo_Value(head_item, "C_FADEOUTSHAPE", 1)
+
     -- Kick
     local kick_transient_position = head_start + head_length
     reaper.SetEditCurPos(kick_transient_position, false, false)
@@ -155,14 +170,14 @@ function Main()
     reaper.GetSetProjectInfo_String(0, "RENDER_PATTERN", output_file, true)
     
     -- Render
-    reaper.Main_OnCommand(42230, 0) -- Render project using last settings
+    --reaper.Main_OnCommand(42230, 0) -- Render project using last settings
     
     -- Clean Up
-    cleanup(head_track)
-    cleanup(kick_track)
-    cleanup(kick_octave_track)
-    cleanup(body_track)
-    cleanup(tail_track)
+    --cleanup(head_track)
+    --cleanup(kick_track)
+    --cleanup(kick_octave_track)
+    --cleanup(body_track)
+    --cleanup(tail_track)
         
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
