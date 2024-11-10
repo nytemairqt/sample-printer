@@ -10,7 +10,7 @@ HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/01-heads"
 KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/02-kicks"
 BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/03-bodies"
 TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/04-tails"
-NUM_GENERATIONS = 1
+NUM_GENERATIONS = 200
 RANDOMIZE_FX = true
 RANDOMIZE_REVERB = true 
 PAD_RIGHT = true 
@@ -170,14 +170,14 @@ function Main()
     reaper.GetSetProjectInfo_String(0, "RENDER_PATTERN", output_file, true)
     
     -- Render
-    --reaper.Main_OnCommand(42230, 0) -- Render project using last settings
+    reaper.Main_OnCommand(42230, 0) -- Render project using last settings
     
     -- Clean Up
-    --cleanup(head_track)
-    --cleanup(kick_track)
-    --cleanup(kick_octave_track)
-    --cleanup(body_track)
-    --cleanup(tail_track)
+    cleanup(head_track)
+    cleanup(kick_track)
+    cleanup(kick_octave_track)
+    cleanup(body_track)
+    cleanup(tail_track)
         
     -- End undo block
     reaper.Undo_EndBlock("Process Audio File", -1)
