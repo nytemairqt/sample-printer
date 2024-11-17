@@ -114,10 +114,10 @@ function Main()
         
         -- Render
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
-        --reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
+        reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
         -- Clean Up
-        --cleanup(track)
+        cleanup(track)
       end
     end   
 
