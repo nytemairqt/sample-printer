@@ -6,23 +6,23 @@ require "functions"
 
 -- Hyperparameters
 
-INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/input"
-OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/01-process-raw-audio/output"    
-NUM_GENERATIONS = 1
+INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/05-ambience/input"
+OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/05-ambience/output"    
+NUM_GENERATIONS = 100
 RANDOMIZE_FX = true
-RANDOMIZE_REVERB = true
+RANDOMIZE_REVERB = false
 SWAP_STEREO = true
 REVERSE = true
 RANDOM_TRIM = true
 PAD_RIGHT = true 
-PAD_AMOUNT = 8
-FADE_IN = 0
-FADE_OUT = 0.3
+PAD_AMOUNT = 18
+FADE_IN = 1.0
+FADE_OUT = 4.0
 MAX_PITCH_SHIFT = -24
 
 function Main()
   -- Initial Setup
-  local track = reaper.GetTrack(0, 0)
+  local track = reaper.GetTrack(0, 9)
   unsolo_tracks()  
   reaper.SetEditCurPos(0.0, true, false)
   reaper.SetOnlyTrackSelected(track)
@@ -66,12 +66,6 @@ function Main()
           reaper.SetMediaTrackInfo_Value(track, "D_WIDTH", -1)
         end
 
-        -- Reverse Buffer
-        if REVERSE and roll() then
-          reaper.ShowConsoleMsg("\nReversing audio buffer.")
-          reaper.Main_OnCommand(41051, 0) -- toggle take reverse
-        end
-
         -- Apply Pitch Shift
         local pitch_shift = math.random() * MAX_PITCH_SHIFT
         reaper.SetMediaItemTakeInfo_Value(take, "D_PITCH", pitch_shift)
@@ -92,7 +86,7 @@ function Main()
 
         -- Generate output filename        
         local output_dir = string.format("%s/", OUTPUT_FOLDER)
-        local output_file = string.format("head_%s.wav", i)
+        local output_file = string.format("ambience_%s.wav", i)
         reaper.ShowConsoleMsg("\nOutput Path: " ..output_dir)
         reaper.ShowConsoleMsg("\nOutput Filename: " ..output_file)
         
@@ -114,10 +108,10 @@ function Main()
         
         -- Render
         --reaper.Main_OnCommand(41824, 0) -- Render project using last settings
-        --reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
+        reaper.Main_OnCommand(42230, 0) -- Render project using last settings (and close dialog)
         
         -- Clean Up
-        --cleanup(track)
+        cleanup(track)
       end
     end   
 

@@ -10,7 +10,7 @@ HEADS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/01-heads"
 KICKS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/02-kicks"
 BODIES = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/03-bodies"
 TAILS = "C:/Users/nytem/Documents/Waveloaf/_dev/04-rise-and-hit/input/04-tails"
-NUM_GENERATIONS = 200
+NUM_GENERATIONS = 500
 RANDOMIZE_FX = true
 RANDOMIZE_REVERB = true 
 PAD_RIGHT = true 
@@ -53,20 +53,22 @@ function Main()
     reaper.Undo_BeginBlock()
     reaper.SetEditCurPos(0.0, false, false) -- reset cursor position
 
-    if RANDOMIZE_FX then 
-      randomize_fx(head_track)
-      randomize_fx(kick_track)
-      randomize_fx(kick_octave_track)
-      randomize_fx(body_track)
-      randomize_fx(tail_track)
-    end
-    if RANDOMIZE_REVERB then 
-      randomize_reverb(head_track)
-      randomize_reverb(kick_track)
-      randomize_reverb(kick_octave_track)
-      randomize_reverb(body_track)
-      randomize_reverb(tail_track)
-    end
+    -- new function requires fx name as strings
+    randomize_fx(track, "RIFT", true)
+    --if RANDOMIZE_FX then 
+    --  randomize_fx(head_track)
+    --  randomize_fx(kick_track)
+    --  randomize_fx(kick_octave_track)
+    --  randomize_fx(body_track)
+    --  randomize_fx(tail_track)
+    --end
+    --if RANDOMIZE_REVERB then 
+    --  randomize_reverb(head_track)
+    --  randomize_reverb(kick_track)
+    --  randomize_reverb(kick_octave_track)
+    --  randomize_reverb(body_track)
+    --  randomize_reverb(tail_track)
+    --end
 
     local head_seed = math.random(1, #head_files)
     local kick_seed = math.random(1, #kick_files)

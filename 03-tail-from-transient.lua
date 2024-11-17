@@ -8,7 +8,7 @@ require "functions"
 
 INPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/input"
 OUTPUT_FOLDER = "C:/Users/nytem/Documents/Waveloaf/_dev/03-tail-from-transient/output"    
-NUM_GENERATIONS = 200
+NUM_GENERATIONS = 500
 RANDOMIZE_FX = true
 RANDOMIZE_REVERB = true
 MAX_LENGTH = 1.5  
@@ -40,13 +40,8 @@ function Main()
     reaper.Undo_BeginBlock()
     reaper.SetEditCurPos(0.0, true, false)
 
-    if RANDOMIZE_FX then 
-      randomize_fx(track)
-    end
-    if RANDOMIZE_REVERB then 
-      randomize_reverb(track)
-      print("hello world")
-    end
+    -- new function requires fx name as strings
+    randomize_fx(track, "RIFT", true)
     
     local seed = math.random(1, #files)   
     local file = files[seed]
